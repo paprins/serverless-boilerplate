@@ -4,7 +4,8 @@
   "description": "A boilerplate for Serverless applications",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "SLS_DEBUG=true serverless invoke test",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/paprins/serverless-boilerplate/issues"
   },
-  "homepage": "https://github.com/paprins/serverless-boilerplate#readme"
+  "homepage": "https://github.com/paprins/serverless-boilerplate#readme",
+  "devDependencies": {
+    "aws-sdk": "^2.225.1",
+    "eslint": "^4.19.1",
+    "serverless-offline": "^3.20.3"
+  }
 }
