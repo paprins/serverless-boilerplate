@@ -1,0 +1,59 @@
+---
+  - name: Deploy service to target environment using serverless.
+    hosts: all
+    gather_facts: false
+
+    vars:
+      base_path: "{{ lookup('pipe', 'git rev-parse --show-toplevel')}}"
+
+      env_to_description:
+        dev: development
+        tst: test
+        uat: acceptance
+        prod: production
+
+      aws_region: eu-west-1
+
+    tasks:
+
+      - name: check required parameters
+        assert:
+          that:
+            - service is defined
+            - env is defined
+          msg: "Missing required variable (oneof: 'service' ,'environment')"
+
+      # getting `role_arn` from SSM Parameter Store
+      # TODO: use `set_fact` and check if value is _not_ empty. If so, fail.
+      - name: assume role
+        sts_assume_role:
+          role_arn          : "{{ lookup('aws_ssm', '/awx/{{service}}/{{env}}/role_arn', region='eu-west-1', decrypt=true)}}"
+          role_session_name : "{{env}}_session"
+          region            : "{{ aws_region }}"
+        changed_when: false
+        register: _role
+
+      - name: set aws facts
+        set_fact:
+          aws_access_key    : "{{ _role.sts_creds.access_key }}"
+          aws_secret_key    : "{{ _role.sts_creds.secret_key }}"
+          aws_session_token : "{{ _role.sts_creds.session_token }}"
+
+      - name: deploy service
+        block:
+          - name: run serverless
+            serverless:
+              region       : "{{ aws_region }}"
+              service_path : "{{ base_path }}/infra"
+              stage        : "{{ env }}"
+            environment:
+              AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+              AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+              AWS_SESSION_TOKEN: "{{ aws_session_token }}"
+            register: _sls
+
+          - debug:
+              msg: "Successfully deployed '{{ service }}' to {{ env_to_description[env] }} environment."
+            when: not _sls.failed
+
+        # If it fails, it fails ... solve it by sending a notification.
