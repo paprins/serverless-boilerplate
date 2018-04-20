@@ -1,0 +1,25 @@
+{
+  "name": "serverless-boilerplate",
+  "version": "1.0.0",
+  "description": "A boilerplate for Serverless applications",
+  "main": "index.js",
+  "scripts": {
+    "test": "SLS_DEBUG=true serverless invoke test",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paprins/serverless-boilerplate.git"
+  },
+  "author": "Pascal Prins",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/paprins/serverless-boilerplate/issues"
+  },
+  "homepage": "https://github.com/paprins/serverless-boilerplate#readme",
+  "devDependencies": {
+    "aws-sdk": "^2.225.1",
+    "eslint": "^4.19.1",
+    "serverless-offline": "^3.20.3"
+  }
+}
