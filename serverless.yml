@@ -1,17 +1,20 @@
 frameworkVersion: ">=1.2.0 <2.0.0"
 
-service: serverless-boilerplate # NOTE: update this with your service name
+service: serverless-boilerplate
 
 provider:
   name: aws
   runtime: nodejs8.10
+  stage: ${opt:stage, 'local'}
   environment:
     SERVERLESS_STAGE: ${opt:stage, self:provider.stage}
     SERVERLESS_PROJECT: ${self:service}
     SERVERLESS_REGION: ${opt:region, self:provider.region}
 
+custom:
+  config: ${file(conf/${self:provider.stage}.yml)}
+
 package:
-  individually: true
   exclude:
     - test/**
     - .git/**
