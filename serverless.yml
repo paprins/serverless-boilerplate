@@ -11,8 +11,13 @@ provider:
     SERVERLESS_PROJECT: ${self:service}
     SERVERLESS_REGION: ${opt:region, self:provider.region}
 
+# TODO: Add support for [serverless-kms-secrets](https://github.com/nordcloud/serverless-kms-secrets)
 custom:
   config: ${file(conf/${self:provider.stage}.yml)}
+
+functions:
+  hello:
+    handler: src/handler.hello
 
 package:
   exclude:
