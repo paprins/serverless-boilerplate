@@ -1,6 +1,7 @@
 ---
   - name: Deploy service to target environment using serverless.
     hosts: all
+    connection: local
     gather_facts: false
 
     vars:
@@ -16,18 +17,24 @@
 
     tasks:
 
+      - assert:
+          that:
+            - ansible_version.major == 2
+            - ansible_version.minor >= 5
+          msg: "You need ansible 2.5 (or later)"
+
       - name: check required parameters
         assert:
           that:
             - service is defined
             - env is defined
-          msg: "Missing required variable (oneof: 'service' ,'environment')"
+          msg: "Missing required variable (oneof: 'service' ,'env')"
 
       # getting `role_arn` from SSM Parameter Store
       # TODO: use `set_fact` and check if value is _not_ empty. If so, fail.
       - name: assume role
         sts_assume_role:
-          role_arn          : "{{ lookup('aws_ssm', '/awx/{{service}}/{{env}}/role_arn', region='eu-west-1', decrypt=true)}}"
+          role_arn          : "{{ lookup('aws_ssm', '/awx/{{service}}/{{env}}/role_arn', region=aws_region, decrypt=true)}}"
           role_session_name : "{{env}}_session"
           region            : "{{ aws_region }}"
         changed_when: false
@@ -44,7 +51,7 @@
           - name: run serverless
             serverless:
               region       : "{{ aws_region }}"
-              service_path : "{{ base_path }}/infra"
+              service_path : "{{ base_path }}"
               stage        : "{{ env }}"
             environment:
               AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
