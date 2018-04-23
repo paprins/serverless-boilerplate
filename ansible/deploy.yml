@@ -15,6 +15,8 @@
 
       aws_region: eu-west-1
 
+      sls_action: deploy
+
     tasks:
 
       - assert:
@@ -29,6 +31,12 @@
             - service is defined
             - env is defined
           msg: "Missing required variable (oneof: 'service' ,'env')"
+
+      - name: check valid values for `sls_action`
+        assert:
+          that:
+            - sls_action in ['deploy','remove']
+          msg: "'{{ sls_action }}' is not a valid value for `sls_action`. Allowed values: ['deploy','remove']"
 
       # getting `role_arn` from SSM Parameter Store
       # TODO: use `set_fact` and check if value is _not_ empty. If so, fail.
@@ -53,6 +61,7 @@
               region       : "{{ aws_region }}"
               service_path : "{{ base_path }}"
               stage        : "{{ env }}"
+              state        : "{{ (sls_action == 'deploy') | ternary('present', 'absent') }}"
             environment:
               AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
               AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
@@ -60,7 +69,7 @@
             register: _sls
 
           - debug:
-              msg: "Successfully deployed '{{ service }}' to {{ env_to_description[env] }} environment."
+              msg: "Successfully {{ (sls_action == 'deploy')|ternary('deployed','removed') }} '{{ service }}' in {{ env_to_description[env] }} environment."
             when: not _sls.failed
 
         # If it fails, it fails ... solve it by sending a notification.
