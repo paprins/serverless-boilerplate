@@ -56,6 +56,17 @@
 
       - name: deploy service
         block:
+          # TODO: Uncomment when [this](https://github.com/ansible/ansible/issues/33555) issue is solved.
+          # - name: install dependencies
+          #   npm:
+          #     path: "{{ base_path }}"
+
+          - name: install dependencies
+            command: npm install
+            args:
+              chdir: "{{ base_path }}"
+            changed_when: false
+
           - name: run serverless
             serverless:
               region       : "{{ aws_region }}"
