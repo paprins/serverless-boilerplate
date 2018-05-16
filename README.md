@@ -9,3 +9,11 @@ $ sls install -u https://github.com/paprins/serverless-boilerplate -n myservicen
 $ cd myservicename
 $ npm install
 ```
+
+## Deploy serverless app with CodeBuild
+
+> You need an IAM policy for the CodeBuild service.
+```
+$ npm install -g yeoman
+$ yo serverless-policy
+```
