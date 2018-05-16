@@ -16,5 +16,5 @@
     build:
       commands:
         - npm run-script lint
-        - serverless deploy --stage $SLS_STAGE --verbose
+        - serverless deploy --stage $SLS_STAGE --region $AWS_REGION --verbose
 ...
