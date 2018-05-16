@@ -1,0 +1,17 @@
+---
+  version: 0.2
+
+  env:
+    variables:
+      SLS_STAGE: dev
+
+  phases:
+    install:
+      commands:
+        - npm install
+        - npm install -g serverless
+    build:
+      commands:
+        - npm run-script lint
+        - serverless deploy --stage $SLS_STAGE --verbose
+...

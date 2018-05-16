@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "SLS_DEBUG=true serverless invoke test",
-    "lint": "eslint . --cache"
+    "lint": "eslint . --cache",
+    "lint-fix": "eslint . --cache --fix"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,6 @@
     "eslint": "./node_modules/.bin/eslint"
   },
   "devDependencies": {
-    "aws-sdk": "^2.225.1",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.4",
     "babel-plugin-source-map-support": "^2.0.1",
@@ -41,6 +41,9 @@
     "serverless-webpack": "^5.1.5",
     "webpack": "^4.8.3",
     "webpack-node-externals": "^1.7.2"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.240.1"
   },
   "babel": {
     "sourceMaps": true,
