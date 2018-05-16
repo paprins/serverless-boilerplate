@@ -16,4 +16,10 @@
       commands:
         - npm run-script lint
         - serverless deploy --stage $SLS_STAGE --region $AWS_REGION --verbose
+
+  artifacts:
+    files:
+      - .serverless/**/*
+    discard-paths: yes
+
 ...
