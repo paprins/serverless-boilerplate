@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "SLS_DEBUG=true serverless invoke test",
-    "lint": "eslint ."
+    "lint": "eslint . --cache"
   },
   "repository": {
     "type": "git",
@@ -17,10 +17,38 @@
     "url": "https://github.com/paprins/serverless-boilerplate/issues"
   },
   "homepage": "https://github.com/paprins/serverless-boilerplate#readme",
+  "bin": {
+    "eslint": "./node_modules/.bin/eslint"
+  },
   "devDependencies": {
     "aws-sdk": "^2.225.1",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.4",
+    "babel-plugin-source-map-support": "^2.0.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.7.0",
     "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.7.0",
+    "eslint-plugin-react": "^7.8.2",
+    "eslint-plugin-standard": "^3.1.0",
     "serverless-offline": "^3.20.3",
-    "serverless-pseudo-parameters": "^1.6.0"
+    "serverless-pseudo-parameters": "^1.6.0",
+    "serverless-webpack": "^5.1.5",
+    "webpack": "^4.8.3",
+    "webpack-node-externals": "^1.7.2"
+  },
+  "babel": {
+    "sourceMaps": true,
+    "plugins": [
+      "transform-runtime"
+    ],
+    "presets": [
+      "env"
+    ]
   }
 }

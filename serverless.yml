@@ -4,26 +4,63 @@ service: serverless-boilerplate
 
 provider:
   name: aws
+  region: ${opt:region, 'eu-west-1'}
   runtime: nodejs8.10
   stage: ${opt:stage, 'local'}
   environment:
     SERVERLESS_STAGE: ${opt:stage, self:provider.stage}
     SERVERLESS_PROJECT: ${self:service}
     SERVERLESS_REGION: ${opt:region, self:provider.region}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "xray:PutTraceSegments"
+      Resource: "*"
 
 # TODO: Add support for [serverless-kms-secrets](https://github.com/nordcloud/serverless-kms-secrets)
 custom:
   config: ${file(conf/${self:provider.stage}.yml)}
-
-functions:
-  hello:
-    handler: src/handler.hello
+  webpackIncludeModules: true
 
 package:
+  individually: true
   exclude:
+    - .serverless
+    - .webpack
+    - coverage
+    - .babelrc
+    - .eslintignore
+    - .eslintrc
+    - .gitignore
+    - LICENSE
+    - package.json
+    - serverless.yml
+    - webpack.config.yml
     - test/**
     - .git/**
 
 plugins:
   - serverless-offline
   - serverless-pseudo-parameters
+  - serverless-webpack
+
+functions:
+  hello:
+    handler: src/handler.hello
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: hello
+          method: post
+          cors: true
+
+resources:
+  Resources:
+    HelloLogGroup:
+      Properties:
+        RetentionInDays: 7
+    HelloLambdaFunction:
+      Properties:
+        TracingConfig:
+          Mode: Active
