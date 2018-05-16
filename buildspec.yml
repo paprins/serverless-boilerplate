@@ -8,6 +8,8 @@
   phases:
     install:
       commands:
+        - pwd
+        - printenv
         - npm install npm@latest -g
         - npm install
         - npm install -g serverless

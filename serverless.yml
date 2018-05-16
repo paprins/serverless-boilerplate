@@ -14,9 +14,9 @@ provider:
   iamManagedPolicies:
     - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
 
-# TODO: Add support for [serverless-kms-secrets](https://github.com/nordcloud/serverless-kms-secrets)
+# NOTE: You _can_ use SSM Parameter Store like this: `${ssm:/path/to/param}`
 custom:
-  config: ${file(./conf/${self:provider.stage}.yml)}
+  config: ${file(conf/${self:provider.stage}.yml)}
 
 package:
   individually: true
