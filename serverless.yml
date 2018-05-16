@@ -16,7 +16,7 @@ provider:
 
 # TODO: Add support for [serverless-kms-secrets](https://github.com/nordcloud/serverless-kms-secrets)
 custom:
-  config: ${file(conf/${self:provider.stage}.yml)}
+  config: ${file(./conf/${self:provider.stage}.yml)}
 
 package:
   individually: true
