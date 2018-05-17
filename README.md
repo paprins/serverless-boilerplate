@@ -17,3 +17,14 @@ $ npm install
 $ npm install -g yeoman
 $ yo serverless-policy
 ```
+
+## Authenticated API
+ The `serverless.yml` also includes an authenticated function called `secret`.
+
+ Before you can use `[httpie](https://httpie.org)` to call the resource, you should install the `[httpie-aws-authv4](https://github.com/aidan-/httpie-aws-authv4)` plugin.
+
+ Install like this: `sudo -H pip install -U httpie-aws-authv4`
+
+ ```
+ $ http -v --auth-type aws4 GET https://<API GATEWAY ID>.execute-api.eu-west-1.amazonaws.com/dev/secret
+ ```
