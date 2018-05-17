@@ -1,0 +1,3 @@
+---
+  deployment_type: Canary10Percent5Minutes
+  deployment_alias: Live

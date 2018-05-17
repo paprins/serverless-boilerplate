@@ -22,6 +22,8 @@ provider:
   region: ${opt:region, 'eu-west-1'}
   runtime: nodejs8.10
   stage: ${opt:stage, 'local'}
+  memorySize: 128
+  timeout: 30
   environment:
     SERVERLESS_STAGE: ${opt:stage, self:provider.stage}
     SERVERLESS_PROJECT: ${self:service}
@@ -29,10 +31,17 @@ provider:
   iamManagedPolicies:
     - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
 
+
 # You _can_ use SSM Parameter Store like this: `${ssm:/path/to/param}`
 # See: https://serverless.com/framework/docs/providers/aws/guide/variables/#reference-variables-using-the-ssm-parameter-store
 custom:
   config: ${file(conf/${self:provider.stage}.yml)}
+  deploymentSettings:
+    # List of stages where you want to deploy your functions gradually.
+    # If not present, it assumes that are all of them.
+    stages:
+      - dev
+      - prod
 
 package:
   individually: true
@@ -55,17 +64,29 @@ plugins:
   - serverless-offline
   - serverless-pseudo-parameters
   - serverless-webpack
+  - serverless-plugin-canary-deployments
 
 functions:
   hello:
     handler: src/hello.handler
-    memorySize: 128
-    timeout: 30
     events:
       - http:
           path: hello
           method: post
           cors: true
+    deploymentSettings:
+      type: ${self:custom.config.deployment_type, 'AllAtOnce'}
+      alias: ${self:custom.config.deployment_alias, 'Live'}
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
+  preHook:
+    handler: src/hooks.pre
+    role: IamRoleTrafficHook
+
+  postHook:
+    handler: src/hooks.post
+    role: IamRoleTrafficHook
 
 resources:
   Resources:
@@ -76,3 +97,18 @@ resources:
       Properties:
         TracingConfig:
           Mode: Active
+    IamRoleTrafficHook:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Action:
+              - sts:AssumeRole
+              Effect: Allow
+              Principal:
+                Service:
+                - lambda.amazonaws.com
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+          - arn:aws:iam::aws:policy/AWSCodeDeployFullAccess

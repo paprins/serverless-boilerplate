@@ -1,2 +1,3 @@
 ---
-  foo: bar
+  deployment_type: AllAtOnce
+  deployment_alias: Dev

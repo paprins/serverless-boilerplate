@@ -32,5 +32,6 @@ module.exports = {
     filename: '[name].js',
     sourceMapFilename: '[file].map',
   },
+  // `aws-sdk` is available by default in Lambda function
   externals: ['aws-sdk'],
 };
