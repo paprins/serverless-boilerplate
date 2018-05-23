@@ -27,7 +27,6 @@ provider:
   environment:
     SERVERLESS_STAGE: ${opt:stage, self:provider.stage}
     SERVERLESS_PROJECT: ${self:service}
-    SERVERLESS_REGION: ${opt:region, self:provider.region}
   iamManagedPolicies:
     - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
 
@@ -35,8 +34,10 @@ provider:
 # You _can_ use SSM Parameter Store like this: `${ssm:/path/to/param}`
 # See: https://serverless.com/framework/docs/providers/aws/guide/variables/#reference-variables-using-the-ssm-parameter-store
 custom:
-  config: ${file(conf/${self:provider.stage}.yml)}
+  variables: ${file(conf/${self:provider.stage}.yml)}
   deploymentSettings:
+    type: ${self:custom.variables.deployment_type, 'AllAtOnce'}
+    alias: ${self:custom.variables.deployment_alias, 'Live'}
     # List of stages where you want to deploy your functions gradually.
     # If not present, it assumes that are all of them.
     stages:
@@ -74,28 +75,6 @@ functions:
           path: hello
           method: post
           cors: true
-    deploymentSettings:
-      type: ${self:custom.config.deployment_type, 'AllAtOnce'}
-      alias: ${self:custom.config.deployment_alias, 'Live'}
-      preTrafficHook: preHook
-      postTrafficHook: postHook
-
-  secret:
-    handler: src/secret.handler
-    events:
-      - http:
-          path: secret
-          method: get
-          cors: true
-          authorizer: aws_iam
-
-  preHook:
-    handler: src/hooks.pre
-    role: IamRoleTrafficHook
-
-  postHook:
-    handler: src/hooks.post
-    role: IamRoleTrafficHook
 
 resources:
   Resources:
@@ -106,113 +85,3 @@ resources:
       Properties:
         TracingConfig:
           Mode: Active
-    IamRoleTrafficHook:
-      Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Action:
-              - sts:AssumeRole
-              Effect: Allow
-              Principal:
-                Service:
-                - lambda.amazonaws.com
-        ManagedPolicyArns:
-          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-          - arn:aws:iam::aws:policy/AWSCodeDeployFullAccess
-    # Cognito - User Pool
-    CognitoUserPool:
-      Type: AWS::Cognito::UserPool
-      Properties:
-        UserPoolName: cognito_sls_backend_user_pool
-    CognitoUserPoolClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        ClientName: cognito_sls_backend_client
-        UserPoolId:
-          Ref: CognitoUserPool
-    CognitoIdentityPool:
-      Type: AWS::Cognito::IdentityPool
-      Properties:
-        IdentityPoolName: cognito_sls_backend_identity_pool
-        AllowUnauthenticatedIdentities: false
-        CognitoIdentityProviders:
-          - ClientId:
-              Ref: CognitoUserPoolClient
-            ProviderName:
-              Fn::GetAtt: [CognitoUserPool, ProviderName]
-    CognitoIdentityPoolRoles:
-      Type: AWS::Cognito::IdentityPoolRoleAttachment
-      Properties:
-        IdentityPoolId:
-          Ref: CognitoIdentityPool
-        Roles:
-          authenticated:
-            Fn::GetAtt: [CognitoAuthRole, Arn]
-          unauthenticated:
-            Fn::GetAtt: [CognitoUnauthRole, Arn]
-    CognitoAuthRole:
-      Type: AWS::IAM::Role
-      Properties:
-        RoleName: appAuthRole
-        Path: /
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: "Allow"
-              Principal:
-                Federated: "cognito-identity.amazonaws.com"
-              Action:
-                - "sts:AssumeRoleWithWebIdentity"
-              Condition:
-                StringEquals:
-                  "cognito-identity.amazonaws.com:aud":
-                    Ref: CognitoIdentityPool
-                "ForAnyValue:StringLike":
-                  "cognito-identity.amazonaws.com:amr": authenticated
-        Policies:
-          - PolicyName: "CognitoAuthorizedPolicy"
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: "Allow"
-                  Action:
-                    - "mobileanalytics:PutEvents"
-                    - "cognito-sync:*"
-                    - "cognito-identity:*"
-                  Resource: "*"
-                - Effect: "Allow"
-                  Action:
-                    - "execute-api:Invoke"
-                  Resource: "*"
-    CognitoUnauthRole:
-      Type: AWS::IAM::Role
-      Properties:
-        RoleName: appUnauthRole
-        Path: /
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: "Allow"
-              Principal:
-                Federated: "cognito-identity.amazonaws.com"
-              Action:
-                - "sts:AssumeRoleWithWebIdentity"
-              Condition:
-                StringEquals:
-                  "cognito-identity.amazonaws.com:aud":
-                    Ref: CognitoIdentityPool
-                "ForAnyValue:StringLike":
-                  "cognito-identity.amazonaws.com:amr": unauthenticated
-        Policies:
-          - PolicyName: "CognitoUnauthorizedPolicy"
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: "Allow"
-                  Action:
-                    - "mobileanalytics:PutEvents"
-                    - "cognito-sync:*"
-                    - "cognito-identity:*"
-                  Resource: "*"
