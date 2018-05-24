@@ -1,3 +1,7 @@
 ---
   deployment_type: Canary10Percent5Minutes
   deployment_alias: Live
+  
+  # basic authentication
+  auth_user: johndoe
+  auth_pass: Welkom01

@@ -1,3 +1,7 @@
 ---
   deployment_type: AllAtOnce
   deployment_alias: Dev
+
+  # basic authentication
+  auth_user: johndoe
+  auth_pass: Welkom01

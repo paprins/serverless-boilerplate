@@ -68,13 +68,25 @@ plugins:
   - serverless-plugin-canary-deployments
 
 functions:
+  authenticator:
+    handler: src/authenticator.handler
+    # in the real world, this should be replaced with, for example, `${ssm:/path/to/auth_user}` (or any alternate solution where credentials are not exposed in plain-text)
+    environment:
+      AUTH_USER: ${self:custom.variables.auth_user}
+      AUTH_PASS: ${self:custom.variables.auth_pass}
+
   hello:
     handler: src/hello.handler
     events:
       - http:
           path: hello
-          method: post
+          method: get
           cors: true
+      - http:
+          path: secret/hello
+          method: get
+          cors: true
+          authorizer: auth
 
 resources:
   Resources:
